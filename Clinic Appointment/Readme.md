@@ -1,5 +1,8 @@
 # Clinic Appointment Management Ecosystem - ER Diagram
 
+<img width="2498" height="1476" alt="diagram-export-8-4-2026-7_41_50-pm" src="https://github.com/user-attachments/assets/05dd3681-542e-4a6a-bbbc-933a577fae4b" />
+
+
 ## Overview
 This ER diagram models a clinic appointment system where patients book doctors, receive consultations, get prescriptions and diagnostics, and complete billing with invoices and payments.
 
