@@ -1,0 +1,73 @@
+title Instagram Thrift & Handmade Business Data Model
+notation chen
+title Instagram Thrift & Handmade Business Data Model
+
+customers [icon: user, color: blue] {
+  customer_id string pk
+  name string
+  phone string
+  email string
+  address string
+}
+
+products [icon: tag, color: purple] {
+  product_id string pk
+  name string
+  description string
+  price decimal
+  product_type string
+  category string
+}
+
+product_variants [icon: layers, color: purple] {
+  variant_id string pk
+  product_id string fk
+  size string
+  color string
+  condition string
+  stock_quantity int
+}
+
+orders [icon: shopping-cart, color: green] {
+  order_id string pk
+  customer_id string fk
+  order_date timestamp
+  total_amount decimal
+  payment_status string
+  shipping_status string
+}
+
+order_items [icon: list, color: green] {
+  order_item_id string pk
+  order_id string fk
+  variant_id string fk
+  quantity int
+  price_at_time decimal
+}
+
+payments [icon: credit-card, color: yellow] {
+  payment_id string pk
+  order_id string fk
+  payment_method string
+  amount decimal
+  payment_status string
+  payment_date timestamp
+}
+
+shipping [icon: truck, color: orange] {
+  shipping_id string pk
+  order_id string fk
+  address string
+  courier_name string
+  tracking_number string
+  shipped_date timestamp
+  delivered_date timestamp
+  status string
+}
+
+customers.customer_id < orders.customer_id
+products.product_id < product_variants.product_id
+orders.order_id < order_items.order_id
+product_variants.variant_id < order_items.variant_id
+orders.order_id - payments.order_id
+orders.order_id - shipping.order_id
