@@ -1,0 +1,144 @@
+title Clinic appointment
+// --- 1. CORE AUTH & PROFILES ---
+
+users [icon: key, color: gray] {
+  user_id string pk
+  email string
+  password_hash string
+  role string // ENUM: 'Admin', 'Doctor', 'Patient', 'Receptionist'
+  is_active boolean
+  created_at timestamp
+}
+
+patient_profiles [icon: user, color: blue] {
+  patient_id string pk
+  user_id string fk // Links to Auth
+  full_name string
+  phone string
+  date_of_birth date
+  gender string
+  blood_group string
+}
+
+specialties [icon: award, color: purple] {
+  specialty_id string pk
+  name string 
+}
+
+doctor_profiles [icon: user-plus, color: indigo] {
+  doctor_id string pk
+  user_id string fk // Links to Auth
+  specialty_id string fk
+  full_name string
+  base_consultation_fee decimal // Essential for automated billing
+}
+
+doctor_schedules [icon: clock, color: cyan] {
+  schedule_id string pk
+  doctor_id string fk
+  day_of_week string // ENUM: 'Monday', 'Tuesday', etc.
+  start_time time
+  end_time time
+}
+
+// --- 2. APPOINTMENTS & MEDICAL RECORDS ---
+
+appointments [icon: calendar, color: orange] {
+  appointment_id string pk
+  patient_id string fk
+  doctor_id string fk
+  scheduled_datetime timestamp
+  status string // ENUM: 'Scheduled', 'In-Progress', 'Completed', 'Cancelled', 'No Show'
+}
+
+consultations [icon: stethoscope, color: red] {
+  consultation_id string pk
+  appointment_id string fk
+  vitals_weight decimal
+  vitals_bp string
+  symptoms_description text
+  doctor_diagnosis text
+  created_at timestamp
+}
+
+prescriptions [icon: file-plus, color: teal] {
+  prescription_id string pk
+  consultation_id string fk
+  general_instructions text
+  issued_at timestamp
+}
+
+prescription_items [icon: pill, color: teal] {
+  item_id string pk
+  prescription_id string fk
+  medicine_name string
+  dosage string // e.g., '500mg'
+  frequency string // e.g., '1-0-1'
+  duration_days int
+}
+
+// --- 3. DIAGNOSTICS & REPORTS ---
+
+diagnostic_catalog [icon: list, color: pink] {
+  test_id string pk
+  test_name string
+  price decimal
+}
+
+test_reports [icon: activity, color: pink] {
+  report_id string pk
+  consultation_id string fk
+  test_id string fk
+  result_summary text
+  status string // ENUM: 'Prescribed', 'Sample Collected', 'Analyzed', 'Delivered'
+  generated_at timestamp
+}
+
+// --- 4. BILLING ENGINE ---
+
+invoices [icon: file-text, color: yellow] {
+  invoice_id string pk
+  appointment_id string fk
+  patient_id string fk
+  total_amount decimal
+  status string // ENUM: 'Draft', 'Unpaid', 'Partial', 'Paid'
+  created_at timestamp
+}
+
+invoice_line_items [icon: list, color: yellow] {
+  line_item_id string pk
+  invoice_id string fk
+  description string // e.g., 'Consultation Fee', 'Blood Test'
+  amount decimal
+}
+
+payments [icon: credit-card, color: green] {
+  payment_id string pk
+  invoice_id string fk
+  amount_paid decimal
+  payment_method string 
+  transaction_ref string
+  paid_at timestamp
+}
+
+// --- RELATIONSHIPS ---
+
+users.user_id - patient_profiles.user_id
+users.user_id - doctor_profiles.user_id
+specialties.specialty_id < doctor_profiles.specialty_id
+doctor_profiles.doctor_id < doctor_schedules.doctor_id
+
+patient_profiles.patient_id < appointments.patient_id
+doctor_profiles.doctor_id < appointments.doctor_id
+appointments.appointment_id - consultations.appointment_id
+
+consultations.consultation_id - prescriptions.consultation_id
+prescriptions.prescription_id < prescription_items.prescription_id
+
+consultations.consultation_id < test_reports.consultation_id
+diagnostic_catalog.test_id < test_reports.test_id
+
+appointments.appointment_id - invoices.appointment_id
+patient_profiles.patient_id < invoices.patient_id
+invoices.invoice_id < invoice_line_items.invoice_id
+invoices.invoice_id < payments.invoice_id

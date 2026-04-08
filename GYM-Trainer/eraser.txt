@@ -1,0 +1,246 @@
+// Fitness Influencer Coaching Ecosystem - Industry Level ERD
+
+users [icon: users, color: gray] {
+	user_id string pk
+	full_name string
+	email string unique
+	phone string
+	password_hash string
+	role string // ENUM: 'trainer', 'client', 'admin'
+	status string // ENUM: 'active', 'inactive', 'blocked'
+	created_at timestamp
+	updated_at timestamp
+}
+
+trainer_profiles [icon: star, color: yellow] {
+	trainer_id string pk fk // FK -> users.user_id
+	ig_handle string
+	bio text
+	specialization string
+	experience_years int
+	certifications text
+	pricing_currency string
+	timezone string
+	created_at timestamp
+	updated_at timestamp
+}
+
+client_profiles [icon: user, color: blue] {
+	client_id string pk fk // FK -> users.user_id
+	date_of_birth date
+	gender string
+	height_cm decimal
+	activity_level string // ENUM: 'Low', 'Moderate', 'High'
+	primary_goal string
+	medical_notes text
+	created_at timestamp
+	updated_at timestamp
+}
+
+coach_client_links [icon: link, color: cyan] {
+	link_id string pk
+	trainer_id string fk
+	client_id string fk
+	link_status string // ENUM: 'active', 'paused', 'ended'
+	started_at timestamp
+	ended_at timestamp
+	created_at timestamp
+}
+
+programs [icon: briefcase, color: purple] {
+	program_id string pk
+	trainer_id string fk
+	name string
+	description text
+	program_type string // ENUM: 'Workout', 'Diet', 'Hybrid', 'Consultation'
+	delivery_mode string // ENUM: 'Self-paced', 'Live', 'Mixed'
+	price decimal
+	duration_weeks int
+	is_active boolean
+	created_at timestamp
+	updated_at timestamp
+}
+
+program_components [icon: layers, color: violet] {
+	component_id string pk
+	program_id string fk
+	component_type string // ENUM: 'Workout Plan', 'Diet Plan', 'Consult Calls', 'Community Access'
+	title string
+	content_url string
+	sequence_no int
+	is_mandatory boolean
+	created_at timestamp
+}
+
+subscriptions [icon: check-circle, color: green] {
+	subscription_id string pk
+	client_id string fk
+	program_id string fk
+	coach_link_id string fk
+	start_date date
+	end_date date
+	status string // ENUM: 'trial', 'active', 'paused', 'expired', 'cancelled'
+	auto_renew boolean
+	list_price decimal
+	discount_amount decimal
+	final_price decimal
+	created_at timestamp
+	updated_at timestamp
+}
+
+invoices [icon: receipt, color: amber] {
+	invoice_id string pk
+	subscription_id string fk
+	invoice_number string unique
+	invoice_date date
+	due_date date
+	invoice_status string // ENUM: 'draft', 'issued', 'paid', 'void', 'overdue'
+	subtotal decimal
+	tax_amount decimal
+	total_amount decimal
+	currency string
+	created_at timestamp
+}
+
+payments [icon: credit-card, color: orange] {
+	payment_id string pk
+	invoice_id string fk
+	subscription_id string fk
+	amount decimal
+	payment_method string // ENUM: 'UPI', 'Stripe', 'PayPal', 'Card', 'Bank Transfer'
+	payment_status string // ENUM: 'initiated', 'completed', 'failed', 'refunded'
+	provider_ref string
+	paid_at timestamp
+	created_at timestamp
+}
+
+sessions [icon: video, color: red] {
+	session_id string pk
+	subscription_id string fk
+	trainer_id string fk
+	client_id string fk
+	session_type string // ENUM: 'Consultation', 'Onboarding', 'Weekly Review', 'Q&A'
+	scheduled_start timestamp
+	scheduled_end timestamp
+	status string // ENUM: 'scheduled', 'completed', 'cancelled', 'no_show'
+	meeting_link string
+	session_notes text
+	created_at timestamp
+	updated_at timestamp
+}
+
+check_ins [icon: activity, color: pink] {
+	check_in_id string pk
+	subscription_id string fk
+	client_id string fk
+	week_number int
+	check_in_date date
+	adherence_score int
+	energy_level int
+	sleep_hours decimal
+	stress_level int
+	client_notes text
+	status string // ENUM: 'submitted', 'reviewed'
+	created_at timestamp
+	updated_at timestamp
+}
+
+progress_entries [icon: bar-chart-2, color: teal] {
+	entry_id string pk
+	check_in_id string fk
+	metric_code string // ENUM EXAMPLES: 'weight_kg', 'body_fat_percent', 'waist_cm', 'steps_avg'
+	metric_value decimal
+	unit string
+	measurement_date date
+	created_at timestamp
+}
+
+trainer_feedbacks [icon: message-circle, color: indigo] {
+	feedback_id string pk
+	check_in_id string fk
+	trainer_id string fk
+	overall_rating int
+	feedback_note text
+	next_week_focus text
+	created_at timestamp
+}
+
+goal_milestones [icon: target, color: lime] {
+	milestone_id string pk
+	subscription_id string fk
+	client_id string fk
+	goal_title string
+	target_metric_code string
+	target_value decimal
+	target_date date
+	achieved_at timestamp
+	status string // ENUM: 'planned', 'in_progress', 'achieved', 'dropped'
+	created_at timestamp
+}
+
+// Relationships (Cardinality)
+// 1 user -> 0..1 trainer profile
+users.user_id < trainer_profiles.trainer_id
+
+// 1 user -> 0..1 client profile
+users.user_id < client_profiles.client_id
+
+// 1 trainer -> many direct trainer-client links
+trainer_profiles.trainer_id < coach_client_links.trainer_id
+
+// 1 client -> many trainer links over time
+client_profiles.client_id < coach_client_links.client_id
+
+// 1 trainer -> many programs
+trainer_profiles.trainer_id < programs.trainer_id
+
+// 1 program -> many components
+programs.program_id < program_components.program_id
+
+// 1 client -> many subscriptions
+client_profiles.client_id < subscriptions.client_id
+
+// 1 program -> many subscriptions
+programs.program_id < subscriptions.program_id
+
+// 1 coach-client link -> many subscriptions over time
+coach_client_links.link_id < subscriptions.coach_link_id
+
+// 1 subscription -> many invoices
+subscriptions.subscription_id < invoices.subscription_id
+
+// 1 invoice -> many payments (supports partial/retry/refund flows)
+invoices.invoice_id < payments.invoice_id
+
+// 1 subscription -> many payments
+subscriptions.subscription_id < payments.subscription_id
+
+// 1 subscription -> many sessions
+subscriptions.subscription_id < sessions.subscription_id
+
+// 1 trainer -> many sessions
+trainer_profiles.trainer_id < sessions.trainer_id
+
+// 1 client -> many sessions
+client_profiles.client_id < sessions.client_id
+
+// 1 subscription -> many check-ins
+subscriptions.subscription_id < check_ins.subscription_id
+
+// 1 client -> many check-ins
+client_profiles.client_id < check_ins.client_id
+
+// 1 check-in -> many progress metric entries (extensible)
+check_ins.check_in_id < progress_entries.check_in_id
+
+// 1 check-in -> many trainer feedback records
+check_ins.check_in_id < trainer_feedbacks.check_in_id
+
+// 1 trainer -> many feedback records
+trainer_profiles.trainer_id < trainer_feedbacks.trainer_id
+
+// 1 subscription -> many goal milestones
+subscriptions.subscription_id < goal_milestones.subscription_id
+
+// 1 client -> many milestones
+client_profiles.client_id < goal_milestones.client_id
