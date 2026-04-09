@@ -2,6 +2,9 @@
 
 Production-style ER diagram for a multi-zone Comic-Con parking system.
 
+<img width="1558" height="1203" alt="diagram-export-9-4-2026-8_18_31-pm" src="https://github.com/user-attachments/assets/d51297d1-ddb3-4b98-9ab8-6f3f893e1101" />
+
+
 ## Scope
 - Vehicle and vehicle category management
 - Zone and level based parking layout
