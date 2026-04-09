@@ -1,0 +1,109 @@
+title Comic-Con India Parking System
+
+// 1) VEHICLES & PASSES
+
+vehicle_categories [icon: settings, color: gray] {
+  category_id string pk
+  category_name string // ENUM: '2-Wheeler', 'Hatchback', 'SUV', 'EV'
+}
+
+vehicles [icon: truck, color: blue] {
+  vehicle_id string pk
+  license_plate string 
+  category_id string fk
+  owner_contact string 
+}
+
+parking_passes [icon: award, color: purple] {
+  pass_id string pk
+  vehicle_id string fk
+  pass_type string // ENUM: 'VIP', 'Cosplayer', 'Exhibitor', 'Staff'
+  valid_until timestamp
+  is_active boolean
+}
+
+// 2) FACILITY LAYOUT
+
+zones [icon: map, color: indigo] {
+  zone_id string pk
+  zone_name string 
+  level_label string // B1, G, L1
+}
+
+gates [icon: log-in, color: cyan] {
+  gate_id string pk
+  gate_name string
+  gate_type string // ENUM: 'Entry', 'Exit', 'Both'
+}
+
+spot_categories [icon: star, color: yellow] {
+  spot_category_id string pk
+  category_name string // ENUM: 'Standard', 'EV Charging', 'VIP Reserved'
+}
+
+parking_spots [icon: target, color: red] {
+  spot_id string pk
+  zone_id string fk
+  spot_category_id string fk
+  spot_number string 
+  status string // ENUM: 'Available', 'Occupied', 'Maintenance'
+}
+
+// 3) SESSIONS & TICKETS
+
+parking_sessions [icon: clock, color: orange] {
+  session_id string pk
+  vehicle_id string fk
+  spot_id string fk
+  entry_gate_id string fk
+  exit_gate_id string fk // Nullable until exit
+  entry_time timestamp
+  exit_time timestamp // Nullable until exit
+  session_status string // ENUM: 'Active', 'Completed'
+}
+
+tickets [icon: file-text, color: pink] {
+  ticket_id string pk
+  session_id string fk
+  barcode_data string
+  ticket_status string // ENUM: 'Active', 'Used', 'Lost'
+}
+
+// 4) PRICING & BILLING
+
+tariffs [icon: dollar-sign, color: green] {
+  tariff_id string pk
+  category_id string fk // Linked to vehicle type
+  day_type string // ENUM: 'Weekday', 'Weekend'
+  rate_per_hour decimal
+}
+
+payments [icon: credit-card, color: green] {
+  payment_id string pk
+  session_id string fk
+  pass_id string fk // Nullable: if present, base_amount might be 0
+  base_amount decimal
+  penalty_amount decimal
+  total_paid decimal
+  payment_status string 
+  payment_time timestamp
+}
+
+// RELATIONSHIPS
+
+vehicle_categories.category_id < vehicles.category_id
+vehicles.vehicle_id < parking_passes.vehicle_id
+
+zones.zone_id < parking_spots.zone_id
+spot_categories.spot_category_id < parking_spots.spot_category_id
+
+vehicles.vehicle_id < parking_sessions.vehicle_id
+parking_spots.spot_id < parking_sessions.spot_id
+gates.gate_id < parking_sessions.entry_gate_id
+gates.gate_id < parking_sessions.exit_gate_id
+
+parking_sessions.session_id - tickets.session_id
+parking_sessions.session_id - payments.session_id
+
+vehicle_categories.category_id < tariffs.category_id
+parking_passes.pass_id < payments.pass_id
