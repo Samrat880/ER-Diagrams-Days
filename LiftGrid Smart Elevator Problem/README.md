@@ -3,6 +3,9 @@
 ## Overview
 This project models the database design for a smart elevator management system across one or more buildings. The ER diagram captures how elevators move, how requests are served, and how maintenance history is recorded.
 
+<img width="1518" height="1712" alt="diagram-export-10-4-2026-8_07_29-pm" src="https://github.com/user-attachments/assets/46bfca00-3676-481b-9175-2d2bb765b096" />
+
+
 ## Core Scope
 - Building structure: buildings and floors
 - Elevator inventory per building
