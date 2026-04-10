@@ -9,3 +9,6 @@
 
 ## **4. Comic-Con Parking Problem** ##
 <img width="1558" height="1203" alt="diagram-export-9-4-2026-8_18_31-pm" src="https://github.com/user-attachments/assets/0425d7c0-ab0f-47d8-b1e9-699973723bb5" />
+
+## **5. Lift Gride Problem** ##
+<img width="1518" height="1712" alt="diagram-export-10-4-2026-8_07_29-pm" src="https://github.com/user-attachments/assets/1037cac8-8522-4466-b8bf-7e1a616394f6" />
