@@ -1,0 +1,96 @@
+
+buildings [icon: home, color: blue] {
+  building_id string pk
+  name string
+  address string
+  total_floors int
+}
+
+floors [icon: layers, color: indigo] {
+  floor_id string pk
+  building_id string fk
+  floor_number int 
+  floor_name string 
+}
+
+elevators [icon: arrow-up, color: purple] {
+  elevator_id string pk
+  building_id string fk
+  shaft_identifier string 
+  capacity_kg decimal
+  max_persons int
+  install_date date
+}
+
+// Handles "Zoning" - which elevators can access which floors
+elevator_floor_access [icon: link, color: gray] {
+  access_id string pk
+  elevator_id string fk
+  floor_id string fk
+}
+
+
+// 1-to-1 relationship with Elevators. Updated constantly.
+elevator_current_status [icon: activity, color: red] {
+  status_id string pk
+  elevator_id string fk
+  current_floor_id string fk 
+  movement_state string 
+  door_state string 
+  operational_mode string 
+  last_updated timestamp
+}
+
+
+floor_requests [icon: user-plus, color: orange] {
+  request_id string pk
+  building_id string fk
+  source_floor_id string fk
+  direction string ENUM: 'Up', 'Down'
+  destination_floor_id string fk Nullable 
+  request_time timestamp
+  status string 
+}
+
+ride_logs [icon: clock, color: green] {
+  ride_log_id string pk
+  request_id string fk 
+  elevator_id string fk 
+  start_floor_id string fk
+  end_floor_id string fk
+  pickup_time timestamp
+  dropoff_time timestamp
+}
+
+
+maintenance_logs [icon: tool, color: yellow] {
+  log_id string pk
+  elevator_id string fk
+  maintenance_type string ENUM
+  reported_issue text
+  technician_notes text
+  start_time timestamp
+  end_time timestamp // Nullable until fixed
+}
+
+
+buildings.building_id < floors.building_id
+buildings.building_id < elevators.building_id
+
+elevators.elevator_id < elevator_floor_access.elevator_id
+floors.floor_id < elevator_floor_access.floor_id
+
+// 1-to-1 relationship
+elevators.elevator_id - elevator_current_status.elevator_id
+floors.floor_id < elevator_current_status.current_floor_id
+
+buildings.building_id < floor_requests.building_id
+floors.floor_id < floor_requests.source_floor_id
+floors.floor_id < floor_requests.destination_floor_id
+
+floor_requests.request_id - ride_logs.request_id
+elevators.elevator_id < ride_logs.elevator_id
+floors.floor_id < ride_logs.start_floor_id
+floors.floor_id < ride_logs.end_floor_id
+
+elevators.elevator_id < maintenance_logs.elevator_id
